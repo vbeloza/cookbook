@@ -1,0 +1,85 @@
+import sys
+from PyQt5.QtWidgets import (
+    QApplication, QWidget, QVBoxLayout, QLineEdit, QPushButton,
+    QTextEdit, QListWidget, QMessageBox, QHBoxLayout
+)
+
+class Recipe:
+    def __init__(self, name, ingredients, instructions, notes):
+        self.name = name
+        self.ingredients = ingredients
+        self.instructions = instructions
+        self.notes = notes
+
+class Cookbook(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Кулинарная Книга")
+        self.setGeometry(100, 100, 600, 400)
+
+        # Список рецептов
+        self.recipes = []
+
+        # Создание интерфейса
+        self.layout = QVBoxLayout()
+
+        self.recipe_name_input = QLineEdit(self)
+        self.recipe_name_input.setPlaceholderText("Название рецепта")
+
+        self.ingredients_input = QTextEdit(self)
+        self.ingredients_input.setPlaceholderText("Ингредиенты (через запятую)")
+
+        self.instructions_input = QTextEdit(self)
+        self.instructions_input.setPlaceholderText("Инструкция")
+
+        self.notes_input = QTextEdit(self)
+        self.notes_input.setPlaceholderText("Дополнения/заметки")
+
+        self.add_button = QPushButton("Добавить рецепт", self)
+        self.add_button.clicked.connect(self.add_recipe)
+
+        self.recipe_list = QListWidget(self)
+        self.recipe_list.itemDoubleClicked.connect(self.view_recipe)
+
+        self.layout.addWidget(self.recipe_name_input)
+        self.layout.addWidget(self.ingredients_input)
+        self.layout.addWidget(self.instructions_input)
+        self.layout.addWidget(self.notes_input)
+        self.layout.addWidget(self.add_button)
+        self.layout.addWidget(self.recipe_list)
+
+        self.setLayout(self.layout)
+
+    def add_recipe(self):
+        name = self.recipe_name_input.text()
+        ingredients = self.ingredients_input.toPlainText().split(',')
+        instructions = self.instructions_input.toPlainText()
+        notes = self.notes_input.toPlainText()
+
+        if name:
+            recipe = Recipe(name, ingredients, instructions, notes)
+            self.recipes.append(recipe)
+            self.recipe_list.addItem(name)
+            self.clear_inputs()
+        else:
+            QMessageBox.warning(self, "Ошибка", "Введите название рецепта.")
+
+    def clear_inputs(self):
+        self.recipe_name_input.clear()
+        self.ingredients_input.clear()
+        self.instructions_input.clear()
+        self.notes_input.clear()
+
+    def view_recipe(self, item):
+        index = self.recipe_list.row(item)
+        recipe = self.recipes[index]
+        recipe_info = f"Ингредиенты:\n{', '.join(recipe.ingredients)}\n\n" \
+                      f"Инструкция:\n{recipe.instructions}\n\n" \
+                      f"Дополнения:\n{recipe.notes}"
+        QMessageBox.information(self, recipe.name, recipe_info)
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    main_window = Cookbook()
+    main_window.show()
+    sys.exit(app.exec_())
